@@ -35,6 +35,7 @@ public class Processor extends Thread {
 
   @Override
   public void run() {
+
     while (started && !stopped) {
       log.debug(new StringBuilder().append("Starting event processor"));
       synchronized (eventQueue) {
