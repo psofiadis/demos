@@ -19,7 +19,7 @@ public class Processor extends Thread {
   private boolean stopped = true;
   private volatile boolean hasSubscribers = true;
   private static List<Listener> listeners;
-  List<EntityDTO> events = new ArrayList<>();
+  List<EntityDTO> events= new ArrayList<>();
 
 
   static {
@@ -28,9 +28,9 @@ public class Processor extends Thread {
 
   final LinkedBlockingQueue<EntityDTO> eventQueue;
 
-  public Processor() {
-    setName("MtosiEventProcessorThread");
-    eventQueue = new LinkedBlockingQueue<>();
+  public Processor(LinkedBlockingQueue<EntityDTO> eventQueue) {
+    setName("ProcessorThread");
+    this.eventQueue = eventQueue;
   }
 
   @Override
@@ -89,7 +89,18 @@ public class Processor extends Thread {
   public void stopProcessor() {
     stopped = true;
     started = false;
-    hasSubscribers = false;
+//    hasSubscribers = false;
+  }
+
+  public void shutDown() {
+    stopProcessor();
+    synchronized (eventQueue) {
+      eventQueue.clear();
+      eventQueue.notifyAll();
+    }
+    synchronized (listeners) {
+      listeners.clear();
+    }
   }
 
   public boolean isStarted() {
@@ -111,10 +122,11 @@ public class Processor extends Thread {
     if(isHasSubscribers()) {
       try {
         List<EntityDTO> eventDTOs = new ArrayList<>(eventDTOList);
-        for (EntityDTO EntityDTO : eventDTOs) {
-          if (EntityDTO != null) {
+        for (EntityDTO entityDTO : eventDTOs) {
+          log.info("Adding to eventQueue entity: "+ entityDTO.toString());
+          if (entityDTO != null) {
             synchronized (eventQueue) {
-              eventQueue.put(EntityDTO);
+              eventQueue.put(entityDTO);
               eventQueue.notifyAll();
             }
           }
