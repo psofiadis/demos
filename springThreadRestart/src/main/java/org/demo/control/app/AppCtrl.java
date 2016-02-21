@@ -1,4 +1,4 @@
-package org.demo.control;
+package org.demo.control.app;
 
 import org.demo.process.Processor;
 

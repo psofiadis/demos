@@ -1,8 +1,7 @@
 package org.demo.generator;
 
-import org.demo.control.AppCtrl;
+import org.demo.control.app.AppCtrl;
 import org.demo.dto.EntityDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +35,12 @@ public class EntityGenerator extends Thread{
     while(true) {
 
       appCtrl.getMonitorAsyncProcessor().addToMtosiProcessingQueue(new ArrayList(){{
-        add(new EntityDTO(id+1,"EntityDTO:"+id, "I am an Entity with id: "+ id));
-        add(new EntityDTO(id+2,"EntityDTO:"+id, "I am an Entity with id: "+ id));
-        add(new EntityDTO(id+3,"EntityDTO:"+id, "I am an Entity with id: "+ id));
+        add(new EntityDTO(++id,"EntityDTO:"+id, "I am an Entity with id: "+ id));
+        add(new EntityDTO(++id,"EntityDTO:"+id, "I am an Entity with id: "+ id));
+        add(new EntityDTO(++id,"EntityDTO:"+id, "I am an Entity with id: "+ id));
       }});
       try {
-        sleep(2000);
+        sleep(1000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

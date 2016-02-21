@@ -2,22 +2,26 @@ package org.demo.process;
 
 import org.demo.dto.EntityDTO;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 /**
  * Created by Panagiotis on 2/20/2016.
  */
 public class HanlderImpl implements Listener {
 
   private final MonitorHelperImpl monitorHelper;
-  private final Processor processor;
+  private Processor processor;
+  static final LinkedBlockingQueue<EntityDTO> eventQueue = new LinkedBlockingQueue<>();
   public HanlderImpl(MonitorHelperImpl monitorHelper) {
-    processor = new Processor();
-    processor.addListener(this);
     this.monitorHelper = monitorHelper;
   }
 
   public void postInit(){
+    if(processor != null) processor.shutDown();
     boolean isSubscriberListEmpty = false;
+    processor = new Processor(eventQueue);
     processor.setHasSubscribers(!isSubscriberListEmpty);
+    processor.addListener(this);
     processor.startProcessor(!isSubscriberListEmpty);
   }
 

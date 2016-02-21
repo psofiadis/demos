@@ -1,7 +1,6 @@
-package org.demo.control;
+package org.demo.control.app;
 
 import org.demo.process.HanlderImpl;
-import org.demo.process.MonitorHelperImpl;
 import org.demo.process.Processor;
 import org.springframework.beans.factory.annotation.Autowired;
 

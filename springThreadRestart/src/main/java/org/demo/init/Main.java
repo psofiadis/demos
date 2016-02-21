@@ -1,6 +1,7 @@
 package org.demo.init;
 
-import org.demo.control.AppCtrlImpl;
+import org.demo.control.app.AppCtrlImpl;
+import org.demo.control.thread.StartStop;
 import org.demo.generator.EntityGenerator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -17,6 +18,9 @@ public class Main {
 
     EntityGenerator generator = new EntityGenerator(appCtrl);
     generator.start();
+
+    StartStop startStop = new StartStop(appCtrl);
+    startStop.start();
 
   }
 

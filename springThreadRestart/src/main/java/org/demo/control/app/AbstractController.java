@@ -1,4 +1,4 @@
-package org.demo.control;
+package org.demo.control.app;
 
 
 import org.apache.log4j.Logger;

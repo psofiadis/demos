@@ -10,5 +10,5 @@
     <bean id="handler" class="org.demo.process.HanlderImpl">
         <constructor-arg name="monitorHelper" ref="helper"/>
     </bean>
-    <bean id="appCtrl" class="org.demo.control.AppCtrlImpl"/>
+    <bean id="appCtrl" class="org.demo.control.app.AppCtrlImpl"/>
 </beans>
