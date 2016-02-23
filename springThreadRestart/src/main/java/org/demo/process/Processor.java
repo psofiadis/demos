@@ -2,6 +2,7 @@ package org.demo.process;
 
 import org.apache.log4j.Logger;
 import org.demo.dto.EntityDTO;
+import org.demo.monitor.MonitoringThread;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +20,10 @@ public class Processor extends Thread {
   private boolean stopped = true;
   private volatile boolean hasSubscribers = true;
   private static List<Listener> listeners;
+  private MonitoringThread monitoringThread;
   List<EntityDTO> events= new ArrayList<>();
+
+  private static int queueSize;
 
 
   static {
@@ -39,7 +43,11 @@ public class Processor extends Thread {
     while (started && !stopped) {
       log.debug(new StringBuilder().append("Starting event processor"));
       synchronized (eventQueue) {
-        processEvents();
+        try {
+          processEvents();
+        }catch(RuntimeException ex){
+          log.error(ex.getMessage());
+        }
       }
     }
     log.debug(new StringBuilder().append("Exiting event processor"));
@@ -49,14 +57,20 @@ public class Processor extends Thread {
     try {
       while (eventQueue.size() > 0) {
         events.add(eventQueue.take());
+        queueSize = eventQueue.size();
       }
       for (EntityDTO event : events) {
-        notifyListeners(event);
+        try {
+          notifyListeners(event);
+        }catch (Throwable e){
+          log.error(new StringBuilder().append("Error processing event with reason ").append(e).toString(),e);
+        }
       }
       events.clear();
       eventQueue.wait();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       log.error(new StringBuilder().append("Error processing event list with reason ").append(e).toString(),e);
+      events.clear();
     }
   }
 
@@ -92,11 +106,13 @@ public class Processor extends Thread {
 //    hasSubscribers = false;
   }
 
-  public void shutDown() {
+  public void shutDown( boolean clean) {
     stopProcessor();
-    synchronized (eventQueue) {
-      eventQueue.clear();
-      eventQueue.notifyAll();
+    if(clean) {
+      synchronized (eventQueue) {
+        eventQueue.clear();
+        eventQueue.notifyAll();
+      }
     }
     synchronized (listeners) {
       listeners.clear();
@@ -122,19 +138,26 @@ public class Processor extends Thread {
     if(isHasSubscribers()) {
       try {
         List<EntityDTO> eventDTOs = new ArrayList<>(eventDTOList);
+        int currentQueueSize = eventQueue.size();
         for (EntityDTO entityDTO : eventDTOs) {
           log.info("Adding to eventQueue entity: "+ entityDTO.toString());
           if (entityDTO != null) {
             synchronized (eventQueue) {
               eventQueue.put(entityDTO);
+              queueSize = eventQueue.size();
               eventQueue.notifyAll();
             }
           }
         }
+        if(currentQueueSize < eventQueue.size() && monitoringThread != null) monitoringThread.setMessage(currentQueueSize, eventQueue.size());
       } catch (InterruptedException e) {
         log.error(new StringBuilder().append("Error adding event ").append(" to queue with reason:").append(e).toString(), e);
       }
     }
+  }
+
+  public void setMonitoringThread(MonitoringThread monitoringThread){
+    this.monitoringThread = monitoringThread;
   }
 
   public synchronized boolean isHasSubscribers() {
@@ -145,4 +168,7 @@ public class Processor extends Thread {
     this.hasSubscribers = hasSubscribers;
   }
 
+  public static int getEventQueueSize() {
+    return queueSize;
+  }
 }

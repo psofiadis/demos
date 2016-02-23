@@ -17,7 +17,7 @@ public class AppCtrlImpl extends AbstractController implements AppCtrl {
 
   @Override
   public void activate(){
-    handler.postInit();
+    handler.postInit(false);
   }
 
   @Override

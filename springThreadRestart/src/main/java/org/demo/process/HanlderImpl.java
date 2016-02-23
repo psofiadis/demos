@@ -16,8 +16,8 @@ public class HanlderImpl implements Listener {
     this.monitorHelper = monitorHelper;
   }
 
-  public void postInit(){
-    if(processor != null) processor.shutDown();
+  public void postInit(boolean clean){
+    if(processor != null) processor.shutDown(clean);
     boolean isSubscriberListEmpty = false;
     processor = new Processor(eventQueue);
     processor.setHasSubscribers(!isSubscriberListEmpty);
